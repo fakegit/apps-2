@@ -1,6 +1,22 @@
+# Temporary files
 *.swp
+*.log
 *~
+.DS_Store
+.vscode/
 
+# Python files
+.venv/
+venv/
+__pycache__/
+.mypy_cache/
+
+# Legacy tools subdirectory
+/tools/
+
+# yunohost specific cache/output dirs
 .apps_cache
-builds
-tools/README-generator/venv/
+builds*
+
+# local debuggings
+package_linter/

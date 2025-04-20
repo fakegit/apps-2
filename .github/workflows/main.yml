@@ -1,6 +1,9 @@
-name: JSON validation
+name: Catalog consistency checks
 
-on: pull_request
+on:
+  pull_request:
+  push:
+    branches: [master]
 
 jobs:
   build:
@@ -8,14 +11,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 2.7
-      uses: actions/setup-python@v2
+    - uses: actions/checkout@v4
+
+    - uses: actions/checkout@v4
       with:
-        python-version: 2.7
-    - name: Check apps.json
+        repository: YunoHost/apps-tools
+        path: tools
+        fetch-depth: 0
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+
+    - name: Install Python dependencies
       run: |
-        python -m json.tool apps.json
-    - name: Check locales
+        pip3 install -r tools/requirements-ci.txt
+
+    - name: Check TOML validity for apps.toml
       run: |
-        for i in ./locales/*.json; do python -m json.tool $i || return 1; done
+        python3 -c "import toml; toml.load(open('apps.toml'))"
+
+    - name: Check all working apps have consistent app id / app url and categories
+      run: |
+        ./tools/catalog_linter.py --apps-dir .
+
+    - name: Check the generation of the app catalog
+      run: |
+        ./tools/list_builder.py --apps-dir .
